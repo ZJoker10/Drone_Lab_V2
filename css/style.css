@@ -1,0 +1,365 @@
+/* ═══════════════════════════════════════════════════════════════
+   style.css — NEXUS-7 Cyberpunk Drone Lab
+   Cyberpunk HUD aesthetic: Orbitron typeface, neon cyan palette,
+   dark panel backgrounds, glitch-style corner brackets.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Custom properties ─────────────────────────────────────────── */
+:root {
+    --cyan:       #00ffff;
+    --cyan-dim:   rgba(0,255,255,0.55);
+    --cyan-faint: rgba(0,255,255,0.12);
+    --magenta:    #ff00aa;
+    --orange:     #ff6600;
+    --bg:         #050510;
+    --panel-bg:   rgba(2,6,22,0.88);
+    --border:     rgba(0,255,255,0.28);
+    --text-hi:    #00ffff;
+    --text-lo:    rgba(0,200,255,0.65);
+    --font-d:     'Orbitron', monospace;
+    --font-m:     'Share Tech Mono', monospace;
+    --trans:      0.25s ease;
+}
+
+/* ── Reset ──────────────────────────────────────────────────────── */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+html, body {
+    width:100%; height:100%;
+    overflow:hidden;
+    background: var(--bg);
+    font-family: var(--font-m);
+    color: var(--text-hi);
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ── WebGL Canvas ────────────────────────────────────────────────── */
+#scene-canvas {
+    position:fixed; inset:0;
+    width:100%; height:100%;
+    display:block;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   LOADING SCREEN
+   ════════════════════════════════════════════════════════════════ */
+#loading-screen {
+    position:fixed; inset:0; z-index:1000;
+    background:#000;
+    display:flex; align-items:center; justify-content:center;
+    transition: opacity 0.75s ease;
+}
+#loading-screen.fade-out { opacity:0; pointer-events:none; }
+
+/* Animated grid backdrop */
+.ls-grid {
+    position:absolute; inset:0;
+    background-image:
+        linear-gradient(rgba(0,255,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,255,255,0.04) 1px, transparent 1px);
+    background-size: 55px 55px;
+    animation: gridBreath 2.5s ease-in-out infinite alternate;
+}
+@keyframes gridBreath {
+    from { opacity:.25; } to { opacity:.75; }
+}
+
+.ls-content {
+    position:relative; z-index:5;
+    text-align:center; padding:40px 20px;
+    max-width:540px; width:100%;
+}
+
+/* Logo */
+.ls-logo {
+    font-family: var(--font-d);
+    font-size: clamp(52px, 12vw, 100px);
+    font-weight:900;
+    color:#fff;
+    letter-spacing:0.18em;
+    animation: logoGlow 1.6s ease-in-out infinite alternate;
+    line-height:1;
+}
+.ls-logo span { color: var(--cyan); }
+
+@keyframes logoGlow {
+    from { text-shadow: 0 0 20px var(--cyan), 0 0 40px var(--cyan); }
+    to   { text-shadow: 0 0 35px var(--cyan), 0 0 70px var(--cyan), 0 0 100px rgba(0,255,255,0.25); }
+}
+
+.ls-sub {
+    font-family: var(--font-m);
+    font-size:11px;
+    letter-spacing:0.3em;
+    color: var(--text-lo);
+    margin:14px 0 36px;
+    text-transform:uppercase;
+}
+
+/* Progress bar */
+.ls-bar-wrap {
+    width:100%; height:3px;
+    background: rgba(0,255,255,0.08);
+    border:1px solid rgba(0,255,255,0.22);
+    margin-bottom:12px; overflow:hidden;
+}
+.ls-bar {
+    height:100%; width:0%;
+    background: linear-gradient(90deg, var(--cyan), #ffffff);
+    box-shadow: 0 0 10px var(--cyan);
+    transition: width 0.4s cubic-bezier(.4,0,.2,1);
+}
+
+.ls-status {
+    font-family: var(--font-m);
+    font-size:11px; letter-spacing:0.22em;
+    color: var(--text-lo);
+    min-height:18px; margin-bottom:28px;
+}
+
+/* Spec tags */
+.ls-specs {
+    display:flex; flex-wrap:wrap; gap:8px; justify-content:center;
+}
+.ls-specs span {
+    font-family: var(--font-m);
+    font-size:9px; letter-spacing:0.15em;
+    color: rgba(0,200,255,0.4);
+    border:1px solid rgba(0,200,255,0.15);
+    padding:3px 10px;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   HUD OVERLAY
+   ════════════════════════════════════════════════════════════════ */
+#hud {
+    position:fixed; inset:0; z-index:100;
+    pointer-events:none;
+    transition: opacity var(--trans);
+}
+#hud.hidden { opacity:0; }
+
+/* Global CRT scanline texture */
+#hud::after {
+    content:'';
+    position:absolute; inset:0;
+    background: repeating-linear-gradient(
+        0deg,
+        transparent, transparent 2px,
+        rgba(0,0,0,0.025) 2px, rgba(0,0,0,0.025) 4px
+    );
+    pointer-events:none;
+}
+
+/* ── Top bar ────────────────────────────────────────────────────── */
+.hud-top {
+    position:absolute; top:0; left:0; right:0;
+    height:48px;
+    display:flex; align-items:center; gap:16px;
+    padding:0 22px;
+    background:linear-gradient(180deg, rgba(0,4,18,0.92) 0%, transparent 100%);
+    border-bottom:1px solid var(--border);
+}
+.hud-brand {
+    font-family: var(--font-d);
+    font-size:15px; font-weight:700;
+    letter-spacing:0.14em; color:#fff;
+    text-shadow: 0 0 12px var(--cyan);
+}
+.hud-brand span { color: var(--cyan); }
+
+.hud-subtitle {
+    font-family: var(--font-m);
+    font-size:9px; letter-spacing:0.2em;
+    color: rgba(0,200,255,0.35);
+    flex:1;
+}
+.hud-clock {
+    font-family: var(--font-m);
+    font-size:13px; letter-spacing:0.1em;
+    color: var(--text-lo);
+    margin-left:auto;
+}
+
+/* ── Panels (left & right) ──────────────────────────────────────── */
+.hud-panel {
+    position:absolute; top:58px;
+    width:214px;
+    background: var(--panel-bg);
+    border:1px solid var(--border);
+    padding:12px 15px 14px;
+    backdrop-filter:blur(6px);
+    /* clip angled corner */
+    clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+}
+.hud-left  { left:18px; }
+.hud-right { right:18px; }
+
+.panel-title {
+    font-family: var(--font-d);
+    font-size:9px; font-weight:700;
+    letter-spacing:0.22em; color: var(--cyan);
+    border-bottom:1px solid rgba(0,255,255,0.18);
+    padding-bottom:8px; margin-bottom:10px;
+}
+
+.panel-row {
+    display:flex; justify-content:space-between;
+    margin-bottom:6px; font-size:11px;
+}
+.lbl { color: var(--text-lo); letter-spacing:0.08em; }
+.val { color: var(--cyan); font-weight:bold; letter-spacing:0.05em; }
+
+/* Battery */
+.bat-row {
+    display:flex; align-items:center; gap:7px;
+    margin-top:10px; font-size:11px;
+}
+.bat-bar {
+    flex:1; height:5px;
+    background:rgba(0,255,255,0.08);
+    border:1px solid rgba(0,255,255,0.22);
+    overflow:hidden;
+}
+.bat-fill {
+    height:100%;
+    background:linear-gradient(90deg, var(--cyan), #00ff88);
+    box-shadow:0 0 6px var(--cyan);
+    transition:width 1s ease, background 1s ease;
+}
+.bat-pct {
+    color: var(--cyan); font-size:10px;
+    min-width:32px; text-align:right;
+}
+
+/* Controls panel extras */
+.ctrl-section-label {
+    font-family: var(--font-d);
+    font-size:8px; letter-spacing:0.18em;
+    color:rgba(0,200,255,0.4);
+    margin-bottom:4px; margin-top:8px;
+}
+.ctrl-row {
+    display:flex; align-items:center; gap:6px;
+    margin-bottom:4px; font-size:10px;
+    color: var(--text-lo);
+}
+kbd {
+    background:rgba(0,255,255,0.08);
+    border:1px solid rgba(0,255,255,0.35);
+    color: var(--cyan);
+    padding:1px 5px; font-size:9px;
+    font-family: var(--font-d);
+    letter-spacing:0.04em; min-width:22px;
+    text-align:center;
+}
+
+/* ── Bottom telemetry ticker ─────────────────────────────────────── */
+.hud-bottom {
+    position:absolute; bottom:0; left:0; right:0;
+    height:36px;
+    display:flex; align-items:center;
+    background:linear-gradient(0deg, rgba(0,4,18,0.92) 0%, transparent 100%);
+    border-top:1px solid var(--border);
+    overflow:hidden;
+}
+.ticker {
+    display:flex; gap:36px; align-items:center;
+    padding:0 20px;
+    font-size:10px; letter-spacing:0.12em;
+    color:rgba(0,200,255,0.55);
+    white-space:nowrap;
+    animation: tickerScroll 25s linear infinite;
+}
+@keyframes tickerScroll {
+    0%   { transform:translateX(0); }
+    50%  { transform:translateX(-220px); }
+    100% { transform:translateX(0); }
+}
+
+/* ── Crosshair ───────────────────────────────────────────────────── */
+.crosshair {
+    position:absolute;
+    top:50%; left:50%;
+    transform:translate(-50%,-50%);
+    width:28px; height:28px;
+    pointer-events:none;
+}
+.ch-h {
+    position:absolute; top:50%; left:0; right:0; height:1px;
+    background:rgba(0,255,255,0.45);
+    transform:translateY(-50%);
+}
+.ch-v {
+    position:absolute; left:50%; top:0; bottom:0; width:1px;
+    background:rgba(0,255,255,0.45);
+    transform:translateX(-50%);
+}
+.ch-dot {
+    position:absolute; top:50%; left:50%;
+    transform:translate(-50%,-50%);
+    width:4px; height:4px;
+    border:1px solid var(--cyan);
+    border-radius:50%;
+}
+
+/* ── Camera mode label ───────────────────────────────────────────── */
+.cam-label {
+    position:absolute; bottom:46px; left:50%;
+    transform:translateX(-50%);
+    font-family: var(--font-d);
+    font-size:9px; letter-spacing:0.2em;
+    color:rgba(0,200,255,0.45);
+    border:1px solid rgba(0,200,255,0.18);
+    background:rgba(0,5,20,0.55);
+    padding:4px 14px;
+    white-space:nowrap;
+}
+
+/* ── Inner corner brackets ───────────────────────────────────────── */
+.hud-inner {
+    position:absolute; inset:56px 0 44px;
+    pointer-events:none;
+}
+.corner {
+    position:absolute; width:18px; height:18px;
+    border-color:rgba(0,255,255,0.4); border-style:solid;
+}
+.corner.tl { top:10px;    left:10px;    border-width:2px 0 0 2px; }
+.corner.tr { top:10px;    right:10px;   border-width:2px 2px 0 0; }
+.corner.bl { bottom:10px; left:10px;    border-width:0 0 2px 2px; }
+.corner.br { bottom:10px; right:10px;   border-width:0 2px 2px 0; }
+
+/* ════════════════════════════════════════════════════════════════
+   NOTIFICATION TOAST
+   ════════════════════════════════════════════════════════════════ */
+.notif {
+    position:fixed; top:60px; left:50%;
+    transform:translateX(-50%);
+    z-index:200;
+    background:rgba(0,255,255,0.07);
+    border:1px solid var(--cyan);
+    color: var(--cyan);
+    padding:7px 26px;
+    font-family: var(--font-d);
+    font-size:11px; letter-spacing:0.22em;
+    text-transform:uppercase;
+    box-shadow:0 0 18px rgba(0,255,255,0.15);
+    transition:opacity var(--trans);
+    pointer-events:none;
+    white-space:nowrap;
+}
+.notif.hidden { opacity:0; }
+
+/* ════════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ════════════════════════════════════════════════════════════════ */
+@media (max-width:700px) {
+    .hud-right    { display:none; }
+    .hud-subtitle { display:none; }
+    .hud-left     { width:180px; }
+    .ls-logo      { font-size:clamp(40px,14vw,72px); }
+}
+@media (max-width:420px) {
+    .hud-left { display:none; }
+}

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NEXUS-7 | Cyberpunk Drone Lab</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  LOADING SCREEN                                                 -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div id="loading-screen">
+    <div class="ls-grid"></div>
+    <div class="ls-content">
+        <div class="ls-logo">NEXUS<span>-7</span></div>
+        <div class="ls-sub">DRONE LAB SYSTEM &nbsp;·&nbsp; v2.0.47 &nbsp;·&nbsp; INTERACTIVE GRAPHICS PROJECT</div>
+
+        <div class="ls-bar-wrap">
+            <div class="ls-bar" id="loading-bar"></div>
+        </div>
+        <div class="ls-status" id="loading-status">INITIALISING SYSTEMS…</div>
+
+        <div class="ls-specs">
+            <span>ENGINE: Three.js r128</span>
+            <span>RENDER: WebGL 2.0</span>
+            <span>SHADING: PBR / ACES</span>
+            <span>TEXTURES: PROCEDURAL</span>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  HUD OVERLAY                                                    -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div id="hud" class="hidden">
+
+    <!-- Top bar -->
+    <header class="hud-top">
+        <div class="hud-brand">NEXUS<span>-7</span> DRONE LAB</div>
+        <div class="hud-subtitle">INTERACTIVE GRAPHICS · SAPIENZA UNIVERSITY</div>
+        <div class="hud-clock" id="hud-time">22:00:00</div>
+    </header>
+
+    <!-- Left panel: Drone Status -->
+    <aside class="hud-panel hud-left">
+        <div class="panel-title">◈ UNIT STATUS</div>
+
+        <div class="panel-row">
+            <span class="lbl">UNIT</span>
+            <span class="val" id="status-unit">NEXUS-ALPHA</span>
+        </div>
+        <div class="panel-row">
+            <span class="lbl">ALTITUDE</span>
+            <span class="val" id="status-alt">2.60 m</span>
+        </div>
+        <div class="panel-row">
+            <span class="lbl">POS X</span>
+            <span class="val" id="status-x">0.00</span>
+        </div>
+        <div class="panel-row">
+            <span class="lbl">POS Z</span>
+            <span class="val" id="status-z">0.00</span>
+        </div>
+        <div class="panel-row">
+            <span class="lbl">ROTORS</span>
+            <span class="val" id="status-rotor">ACTIVE</span>
+        </div>
+        <div class="panel-row">
+            <span class="lbl">MODE</span>
+            <span class="val" id="status-mode">MANUAL</span>
+        </div>
+
+        <!-- Battery -->
+        <div class="bat-row">
+            <span class="lbl">POWER</span>
+            <div class="bat-bar">
+                <div class="bat-fill" id="battery-fill" style="width:94%"></div>
+            </div>
+            <span class="bat-pct" id="battery-pct">94%</span>
+        </div>
+    </aside>
+
+    <!-- Right panel: Controls -->
+    <aside class="hud-panel hud-right">
+        <div class="panel-title">◈ CONTROLS</div>
+
+        <div class="ctrl-section-label">FLIGHT</div>
+        <div class="ctrl-row"><kbd>W</kbd><kbd>↑</kbd><span>Forward</span></div>
+        <div class="ctrl-row"><kbd>S</kbd><kbd>↓</kbd><span>Backward</span></div>
+        <div class="ctrl-row"><kbd>A</kbd><kbd>←</kbd><span>Strafe Left</span></div>
+        <div class="ctrl-row"><kbd>D</kbd><kbd>→</kbd><span>Strafe Right</span></div>
+        <div class="ctrl-row"><kbd>Q</kbd><span>·</span><span>Ascend</span></div>
+        <div class="ctrl-row"><kbd>E</kbd><span>·</span><span>Descend</span></div>
+        <div class="ctrl-row"><kbd>R</kbd><kbd>T</kbd><span>Yaw</span></div>
+
+        <div class="ctrl-section-label" style="margin-top:8px">SYSTEM</div>
+        <div class="ctrl-row"><kbd>SPACE</kbd><span>Auto-Hover</span></div>
+        <div class="ctrl-row"><kbd>H</kbd><span>Home Pad</span></div>
+        <div class="ctrl-row"><kbd>L</kbd><span>Neon Lights</span></div>
+        <div class="ctrl-row"><kbd>P</kbd><span>Power Toggle</span></div>
+
+        <div class="ctrl-section-label" style="margin-top:8px">CAMERA</div>
+        <div class="ctrl-row"><kbd>1</kbd><span>Chase</span></div>
+        <div class="ctrl-row"><kbd>2</kbd><span>Free Orbit</span></div>
+        <div class="ctrl-row"><kbd>3</kbd><span>Cinematic</span></div>
+        <div class="ctrl-row"><kbd>DRAG</kbd><span>Orbit (Mode 2)</span></div>
+    </aside>
+
+    <!-- Bottom telemetry ticker -->
+    <footer class="hud-bottom">
+        <div class="ticker">
+            <span>◈ SIGNAL: 98%</span>
+            <span>◈ LATENCY: 2 ms</span>
+            <span id="tel-fps">◈ FPS: 60</span>
+            <span>◈ DRONES ACTIVE: 4</span>
+            <span>◈ SECTOR: ALPHA-7</span>
+            <span>◈ THREAT LEVEL: NONE</span>
+            <span>◈ TEMP: 22 °C</span>
+            <span>◈ NEXUS-7 LAB ONLINE</span>
+        </div>
+    </footer>
+
+    <!-- Center crosshair -->
+    <div class="crosshair">
+        <div class="ch-h"></div>
+        <div class="ch-v"></div>
+        <div class="ch-dot"></div>
+    </div>
+
+    <!-- Camera mode label -->
+    <div class="cam-label" id="cam-mode">CAM 1 : CHASE</div>
+
+    <!-- Corner brackets (pure CSS via ::before/::after on hud-inner) -->
+    <div class="hud-inner">
+        <div class="corner tl"></div>
+        <div class="corner tr"></div>
+        <div class="corner bl"></div>
+        <div class="corner br"></div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  NOTIFICATION TOAST                                             -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div id="notification" class="notif hidden">
+    <span id="notification-text"></span>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  WEBGL CANVAS                                                   -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<canvas id="scene-canvas"></canvas>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  THREE.JS + ORBIT CONTROLS (CDN)                               -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
+<script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  PROJECT SCRIPTS  (load-order matters)                         -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<script src="js/textures.js"></script>
+<script src="js/lighting.js"></script>
+<script src="js/drone.js"></script>
+<script src="js/environment.js"></script>
+<script src="js/particles.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/main.js"></script>
+
+</body>
+</html>
